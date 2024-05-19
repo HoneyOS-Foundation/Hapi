@@ -47,14 +47,14 @@ impl Process {
     /// Check if the process is alive
     pub fn alive(&self) -> bool {
         let id = &self.0;
-        let alive = unsafe { crate::ffi::hapi_process_alive(id.as_ptr(), id.len() as u32) };
+        let alive = unsafe { crate::ffi::hapi_process_alive(id.as_ptr()) };
         alive > 0
     }
 
     /// Fetch the stdout of the process
     pub fn stdout(&self) -> Option<String> {
         let id = &self.0;
-        let stdout_ptr = unsafe { crate::ffi::hapi_process_stdout(id.as_ptr(), id.len() as u32) };
+        let stdout_ptr = unsafe { crate::ffi::hapi_process_stdout(id.as_ptr()) };
 
         if stdout_ptr == std::ptr::null() {
             return None;

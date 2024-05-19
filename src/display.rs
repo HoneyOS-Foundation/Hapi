@@ -36,7 +36,7 @@ impl Display {
     /// Set the text on the display's text buffer
     pub fn set_text(&mut self, text: impl Into<String>) -> Result<(), DisplayError> {
         let text: String = text.into();
-        let result = unsafe { crate::ffi::hapi_display_set_text(text.as_ptr(), text.len() as u32) };
+        let result = unsafe { crate::ffi::hapi_display_set_text(text.as_ptr()) };
         if result == -1 {
             return Err(DisplayError::NotRegistered);
         }
@@ -75,8 +75,7 @@ impl DisplayServer {
 
     pub fn claim(display: &Display) -> Result<(), DisplayError> {
         let id = &display.0;
-        let result =
-            unsafe { crate::ffi::hapi_display_server_claim_main(id.as_ptr(), id.len() as u32) };
+        let result = unsafe { crate::ffi::hapi_display_server_claim_main(id.as_ptr()) };
         if result == -1 {
             return Err(DisplayError::NotRegistered);
         }

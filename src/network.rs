@@ -50,15 +50,8 @@ impl Request {
         let headers: String = headers.into();
         let method: u32 = method.into();
 
-        let id = unsafe {
-            crate::ffi::hapi_network_request(
-                url.as_ptr(),
-                url.len() as u32,
-                method,
-                headers.as_ptr(),
-                headers.len() as u32,
-            )
-        };
+        let id =
+            unsafe { crate::ffi::hapi_network_request(url.as_ptr(), method, headers.as_ptr()) };
 
         if id == std::ptr::null() {
             return Err(NetworkError::InvalidHeaders);
@@ -106,9 +99,7 @@ impl Request {
 
     /// Check the status of the request
     pub fn status(&self) -> Result<RequestStatus, NetworkError> {
-        let status = unsafe {
-            crate::ffi::hapi_network_request_status(self.0.as_ptr(), self.0.len() as u32)
-        };
+        let status = unsafe { crate::ffi::hapi_network_request_status(self.0.as_ptr()) };
         if status <= -1 {
             return Err(NetworkError::InvalidRequestId(self.0.clone()));
         }
@@ -124,20 +115,13 @@ impl Request {
             RequestStatus::Fail => Err(NetworkError::RequestFailure(self.0.clone())),
             RequestStatus::Pending => Err(NetworkError::StillPending(self.0.clone())),
             RequestStatus::Success => {
-                let ptr = unsafe {
-                    crate::ffi::hapi_network_request_data(self.0.as_ptr(), self.0.len() as u32)
-                };
+                let ptr = unsafe { crate::ffi::hapi_network_request_data(self.0.as_ptr()) };
 
                 if ptr == std::ptr::null() {
                     return Err(NetworkError::AllocFailure(self.0.clone()));
                 }
 
-                let len = unsafe {
-                    crate::ffi::hapi_network_request_data_length(
-                        self.0.as_ptr(),
-                        self.0.len() as u32,
-                    )
-                };
+                let len = unsafe { crate::ffi::hapi_network_request_data_length(self.0.as_ptr()) };
                 let slice = unsafe { std::slice::from_raw_parts(ptr, len as usize) };
 
                 Ok(slice.to_vec())
@@ -165,7 +149,7 @@ impl Request {
 
 impl Drop for Request {
     fn drop(&mut self) {
-        unsafe { crate::ffi::hapi_network_request_drop(self.0.as_ptr(), self.0.len() as u32) }
+        unsafe { crate::ffi::hapi_network_request_drop(self.0.as_ptr()) }
     }
 }
 

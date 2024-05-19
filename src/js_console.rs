@@ -38,18 +38,18 @@ pub mod log {
     /// Log a string to the js console as info
     pub fn info(string: impl Into<String>) {
         let string: String = string.into();
-        unsafe { crate::ffi::hapi_js_console_log_info(string.as_ptr(), string.len() as u32) }
+        unsafe { crate::ffi::hapi_js_console_log_info(string.as_ptr()) }
     }
 
     /// Log a string to the js console as a warning
     pub fn warn(string: impl Into<String>) {
         let string: String = string.into();
-        unsafe { crate::ffi::hapi_js_console_log_warn(string.as_ptr(), string.len() as u32) }
+        unsafe { crate::ffi::hapi_js_console_log_warn(string.as_ptr()) }
     }
 
     /// Log a string to the js console as an error
     pub fn error(string: impl Into<String>) {
         let string: String = string.into();
-        unsafe { crate::ffi::hapi_js_console_log_error(string.as_ptr(), string.len() as u32) }
+        unsafe { crate::ffi::hapi_js_console_log_error(string.as_ptr()) }
     }
 }

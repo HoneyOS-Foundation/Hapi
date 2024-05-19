@@ -31,8 +31,8 @@ pub fn write(string: impl Into<String>) {
     let string: String = string.into();
     let string = format!("{}", string);
     // # Safety
-    // Since we are passing the correct pointer and length, we are garunteed not to write unallocated memory
-    unsafe { crate::ffi::hapi_stdout_write(string.as_ptr(), string.len() as u32) }
+    // Since the string is garunteed to hae a null terminator, we are garunteed not to write unallocated memory
+    unsafe { crate::ffi::hapi_stdout_write(string.as_ptr()) }
 }
 
 /// Write a line to honeyos's stdout
@@ -40,6 +40,6 @@ pub fn writeln(string: impl Into<String>) {
     let string: String = string.into();
     let string = format!("{}\n", string);
     // # Safety
-    // Since we are passing the correct pointer and length, we are garunteed not to write unallocated memory
-    unsafe { crate::ffi::hapi_stdout_write(string.as_ptr(), string.len() as u32) }
+    // Since the string is garunteed to hae a null terminator, we are garunteed not to write unallocated memory
+    unsafe { crate::ffi::hapi_stdout_write(string.as_ptr()) }
 }
