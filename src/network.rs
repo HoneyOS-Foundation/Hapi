@@ -1,5 +1,7 @@
 use std::ffi::{CStr, CString};
 
+use crate::js_console::log;
+
 /// A network error
 #[derive(Debug)]
 pub enum NetworkError {
@@ -52,6 +54,8 @@ impl Request {
 
         let url_cstring = CString::new(url).unwrap();
         let headers_cstring = CString::new(headers).unwrap();
+
+        crate::js_console::log::info(format!("{:?}", headers_cstring));
 
         let id = unsafe {
             crate::ffi::hapi_network_request(
