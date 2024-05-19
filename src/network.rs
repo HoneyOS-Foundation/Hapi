@@ -1,4 +1,4 @@
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 
 /// A network error
 #[derive(Debug)]
@@ -50,8 +50,16 @@ impl Request {
         let headers: String = headers.into();
         let method: u32 = method.into();
 
-        let id =
-            unsafe { crate::ffi::hapi_network_request(url.as_ptr(), method, headers.as_ptr()) };
+        let url_cstring = CString::new(url).unwrap();
+        let headers_cstring = CString::new(headers).unwrap();
+
+        let id = unsafe {
+            crate::ffi::hapi_network_request(
+                url_cstring.as_ptr() as *const u8,
+                method,
+                headers_cstring.as_ptr() as *const u8,
+            )
+        };
 
         if id == std::ptr::null() {
             return Err(NetworkError::InvalidHeaders);
@@ -99,7 +107,9 @@ impl Request {
 
     /// Check the status of the request
     pub fn status(&self) -> Result<RequestStatus, NetworkError> {
-        let status = unsafe { crate::ffi::hapi_network_request_status(self.0.as_ptr()) };
+        let id_cstr = CString::new(self.0.clone()).unwrap();
+        let status =
+            unsafe { crate::ffi::hapi_network_request_status(id_cstr.as_ptr() as *const u8) };
         if status <= -1 {
             return Err(NetworkError::InvalidRequestId(self.0.clone()));
         }
