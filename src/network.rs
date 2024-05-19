@@ -5,13 +5,13 @@ use crate::js_console::log;
 /// A network error
 #[derive(Debug)]
 pub enum NetworkError {
-    InvalidRequestId(String),
+    InvalidRequestId(CString),
     InvalidHeaders,
     InvalidRequestStatus(u32),
-    RequestFailure(String),
-    StillProcessing(String),
-    StillPending(String),
-    AllocFailure(String),
+    RequestFailure(CString),
+    StillProcessing(CString),
+    StillPending(CString),
+    AllocFailure(CString),
 }
 
 /// The status of a request
@@ -39,7 +39,7 @@ pub enum RequestMethod {
 
 /// Represents a request
 #[derive(Debug)]
-pub struct Request(String);
+pub struct Request(CString);
 
 impl Request {
     /// Create a new network request
@@ -70,8 +70,7 @@ impl Request {
         // # Safety
         // Since the pid is garunteed to have a null terminator, there is no way of accessing unallocated memory.
         let id_str = unsafe { CStr::from_ptr(id as *const i8) };
-        let mut id_str = id_str.to_string_lossy().to_string();
-        let _ = id_str.split_off(36);
+        let id_str = id_str.to_owned();
 
         unsafe { crate::mem::free(id as *mut u8) };
         Ok(Request(id_str))
@@ -109,9 +108,8 @@ impl Request {
 
     /// Check the status of the request
     pub fn status(&self) -> Result<RequestStatus, NetworkError> {
-        let id_cstr = CString::new(self.0.clone()).unwrap();
         let status =
-            unsafe { crate::ffi::hapi_network_request_status(id_cstr.as_ptr() as *const u8) };
+            unsafe { crate::ffi::hapi_network_request_status(self.0.as_ptr() as *const u8) };
         if status <= -1 {
             return Err(NetworkError::InvalidRequestId(self.0.clone()));
         }
@@ -127,13 +125,16 @@ impl Request {
             RequestStatus::Fail => Err(NetworkError::RequestFailure(self.0.clone())),
             RequestStatus::Pending => Err(NetworkError::StillPending(self.0.clone())),
             RequestStatus::Success => {
-                let ptr = unsafe { crate::ffi::hapi_network_request_data(self.0.as_ptr()) };
+                let ptr =
+                    unsafe { crate::ffi::hapi_network_request_data(self.0.as_ptr() as *const u8) };
 
                 if ptr == std::ptr::null() {
                     return Err(NetworkError::AllocFailure(self.0.clone()));
                 }
 
-                let len = unsafe { crate::ffi::hapi_network_request_data_length(self.0.as_ptr()) };
+                let len = unsafe {
+                    crate::ffi::hapi_network_request_data_length(self.0.as_ptr() as *const u8)
+                };
                 let slice = unsafe { std::slice::from_raw_parts(ptr, len as usize) };
 
                 Ok(slice.to_vec())
@@ -155,13 +156,13 @@ impl Request {
 
     /// Get the id
     pub fn id(&self) -> &str {
-        self.0.as_str()
+        self.0.as_c_str().to_str().unwrap()
     }
 }
 
 impl Drop for Request {
     fn drop(&mut self) {
-        unsafe { crate::ffi::hapi_network_request_drop(self.0.as_ptr()) }
+        unsafe { crate::ffi::hapi_network_request_drop(self.0.as_ptr() as *const u8) }
     }
 }
 
@@ -171,23 +172,23 @@ impl std::fmt::Display for NetworkError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             NetworkError::InvalidRequestId(id) => {
-                writeln!(f, "The request {} does not or no longer exists", id)
+                writeln!(f, "The request {:?} does not or no longer exists", id)
             }
             NetworkError::InvalidHeaders => writeln!(f, "Unable to parse request headers"),
             NetworkError::InvalidRequestStatus(v) => {
                 writeln!(f, "Request status of {} is invalid", v)
             }
-            NetworkError::RequestFailure(id) => writeln!(f, "Request {} failed to complete", id),
+            NetworkError::RequestFailure(id) => writeln!(f, "Request {:?} failed to complete", id),
             NetworkError::StillProcessing(id) => {
-                writeln!(f, "Request {} is still being processed", id)
+                writeln!(f, "Request {:?} is still being processed", id)
             }
             NetworkError::StillPending(id) => {
-                writeln!(f, "Request {} is still pending", id)
+                writeln!(f, "Request {:?} is still pending", id)
             }
             NetworkError::AllocFailure(id) => {
                 writeln!(
                     f,
-                    "Failed to allocate memory to hold data of request {}",
+                    "Failed to allocate memory to hold data of request {:?}",
                     id
                 )
             }
