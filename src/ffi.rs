@@ -200,4 +200,24 @@ extern "C" {
         size: u32,
         buffer: *mut u8,
     ) -> i32;
+    /// Create a directory at the path.
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` If the directory doesn't exist
+    /// - `-2` If a directory with the name already exists
+    /// - `-3` If the path string is invalid
+    /// ### Panics
+    /// Panics if the filesystem is poisoned.
+    pub fn hapi_fs_directory_create(path: *const u8) -> i32;
+    /// Find a directory at disk and return it's id
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` if the directory does not exist or if the path is incorrect.
+    /// - `-2` If the fs label does not correspond to an active fs
+    /// ### Panics
+    /// Panics if the filesystem is poisoned.
+    /// ### Safety
+    /// The destination buffer must be the size of a UUID (37 bytes),
+    /// otherwise the remaining bytes will be written to unallocated memory and can cause UB.
+    pub fn hapi_fs_directory_get(path: *const u8, id_buf: *mut u8) -> i32;
 }
