@@ -41,6 +41,7 @@ pub fn write(string: impl Into<String>) {
 /// Write a line to honeyos's stdout
 pub fn writeln(string: impl Into<String>) {
     let string: String = string.into();
+    let string = format!("{}\n", string);
     let cstring = CString::new(string.clone()).unwrap();
     // # Safety
     // Since the string is garunteed to hae a null terminator, we are garunteed not to write unallocated memory

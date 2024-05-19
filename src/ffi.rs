@@ -200,6 +200,14 @@ extern "C" {
         size: u32,
         buffer: *mut u8,
     ) -> i32;
+    /// Return a file's length
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` if the file does not exist or if the path is incorrect.
+    /// - `-2` If the fs label does not correspond to an active fs
+    /// ### Panics
+    /// Panics if the filesystem is poisoned.
+    pub fn hapi_fs_file_size(fs_label: u8, file_id: *const u8) -> i32;
     /// Create a directory at the path.
     /// ### Returns
     /// - `0` On success

@@ -3,6 +3,7 @@
 pub mod browser;
 pub mod display;
 pub mod ffi;
+pub mod fs;
 pub mod futures;
 pub mod js_console;
 pub mod mem;
