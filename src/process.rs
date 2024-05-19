@@ -1,4 +1,4 @@
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 
 /// Get the process id
 pub fn pid() -> Option<String> {
@@ -47,14 +47,16 @@ impl Process {
     /// Check if the process is alive
     pub fn alive(&self) -> bool {
         let id = &self.0;
-        let alive = unsafe { crate::ffi::hapi_process_alive(id.as_ptr()) };
+        let id_cstr = CString::new(id.clone()).unwrap();
+        let alive = unsafe { crate::ffi::hapi_process_alive(id_cstr.as_ptr() as *const u8) };
         alive > 0
     }
 
     /// Fetch the stdout of the process
     pub fn stdout(&self) -> Option<String> {
         let id = &self.0;
-        let stdout_ptr = unsafe { crate::ffi::hapi_process_stdout(id.as_ptr()) };
+        let id_cstr = CString::new(id.clone()).unwrap();
+        let stdout_ptr = unsafe { crate::ffi::hapi_process_stdout(id_cstr.as_ptr() as *const u8) };
 
         if stdout_ptr == std::ptr::null() {
             return None;

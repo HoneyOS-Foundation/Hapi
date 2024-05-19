@@ -35,21 +35,26 @@ impl ::log::Log for JsConsoleLogger {
 }
 
 pub mod log {
+    use std::ffi::CString;
+
     /// Log a string to the js console as info
     pub fn info(string: impl Into<String>) {
         let string: String = string.into();
-        unsafe { crate::ffi::hapi_js_console_log_info(string.as_ptr()) }
+        let cstring = CString::new(string.clone()).unwrap();
+        unsafe { crate::ffi::hapi_js_console_log_info(cstring.as_ptr() as *const u8) }
     }
 
     /// Log a string to the js console as a warning
     pub fn warn(string: impl Into<String>) {
         let string: String = string.into();
-        unsafe { crate::ffi::hapi_js_console_log_warn(string.as_ptr()) }
+        let cstring = CString::new(string.clone()).unwrap();
+        unsafe { crate::ffi::hapi_js_console_log_warn(cstring.as_ptr() as *const u8) }
     }
 
     /// Log a string to the js console as an error
     pub fn error(string: impl Into<String>) {
         let string: String = string.into();
-        unsafe { crate::ffi::hapi_js_console_log_error(string.as_ptr()) }
+        let cstring = CString::new(string.clone()).unwrap();
+        unsafe { crate::ffi::hapi_js_console_log_error(cstring.as_ptr() as *const u8) }
     }
 }
