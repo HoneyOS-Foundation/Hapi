@@ -140,4 +140,64 @@ extern "C" {
     /// Drop the request from memory.
     /// Does nothing if the request does not exist.
     pub fn hapi_network_request_drop(id: *const u8);
+    /// Register a ram filesystem with the provided label.
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` If the label char is invalid
+    /// - `-2` If the label is already occupied
+    /// ### Panics
+    /// Panics if the filesystem is poisoned.
+    pub fn hapi_fs_init_ramfs(label: u8) -> i32;
+    /// Create a file at the path.
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` If the directory doesn't exist
+    /// - `-2` If a file with the name already exists
+    /// - `-3` If the path string is invalid
+    /// ### Panics
+    /// Panics if the filesystem is poisoned.
+    pub fn hapi_fs_file_create(path: *const u8) -> i32;
+    /// Find a file at disk and return it's id
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` if the file does not exist or if the path is incorrect.
+    /// ### Panics
+    /// Panics if the filesystem is poisoned.
+    /// ### Safety
+    /// The destination buffer must be the size of a UUID (37 bytes),
+    /// otherwise the remaining bytes will be written to unallocated memory and can cause UB.
+    pub fn hapi_fs_file_get(path: *const u8, id_buf: *mut u8) -> i32;
+    /// Write a set amount of bytes to a file
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` if the file does not exist or if the path is incorrect.
+    /// - `-2` If the file label does not correspond to an active fs
+    /// - `-3` If there is not enough space
+    /// ### Panics
+    /// Panics if the filesystem is poisoned.
+    /// ### Safety
+    /// If the size of the buffer is smaller than the reported, unallocated memory will be read from and can cause UB.
+    pub fn hapi_fs_file_write(
+        fs_label: u8,
+        file_id: *const u8,
+        offset: u32,
+        size: u32,
+        buffer: *const u8,
+    ) -> i32;
+    /// Read a set amount of bytes from the file and write it to a buffer
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` if the file does not exist or if the path is incorrect.
+    /// - `-2` If the file label does not correspond to an active fs
+    /// ### Panics
+    /// Panics if the filesystem is poisoned.
+    /// ### Safety
+    /// If the size of the buffer is smaller than the reported, unallocated memory will be written to and can cause UB.
+    pub fn hapi_fs_file_read(
+        fs_label: u8,
+        file_id: *const u8,
+        offset: u32,
+        size: u32,
+        buffer: *mut u8,
+    ) -> i32;
 }

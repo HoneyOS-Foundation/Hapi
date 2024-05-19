@@ -37,9 +37,17 @@ pub fn main(_: TokenStream, item: TokenStream) -> TokenStream {
         Some(_) => quote! { main().await },
         _ => quote! {main()},
     };
+
     let entrypoint_call = match entrypoint.sig.output {
         ReturnType::Default => entrypoint_call,
-        _ => quote! {#entrypoint_call.unwrap()},
+        _ => quote! {
+            if cfg!(feature = "logger") {
+                #entrypoint_call.map_err(|e| log::error!("{}", e)).unwrap();
+            }
+            else {
+                #entrypoint_call.unwrap();
+            }
+        },
     };
     let entrypoint_call = match entrypoint.sig.asyncness {
         Some(_) => quote! {

@@ -1,7 +1,5 @@
 use std::ffi::{CStr, CString};
 
-use crate::js_console::log;
-
 /// A network error
 #[derive(Debug)]
 pub enum NetworkError {
