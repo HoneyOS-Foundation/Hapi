@@ -55,8 +55,6 @@ impl Request {
         let url_cstring = CString::new(url).unwrap();
         let headers_cstring = CString::new(headers).unwrap();
 
-        crate::js_console::log::info(format!("{:?}", headers_cstring));
-
         let id = unsafe {
             crate::ffi::hapi_network_request(
                 url_cstring.as_ptr() as *const u8,
