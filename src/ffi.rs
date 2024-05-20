@@ -16,6 +16,15 @@ extern "C" {
     pub fn hapi_stdout_write(string: *const u8);
     /// Returns the process id of the current process
     pub fn hapi_process_get_pid() -> *const u8;
+    /// Get the current working directory
+    pub fn hapi_process_get_cwd() -> *const u8;
+    /// Sets the current working directory for the process.
+    /// ### Note
+    /// There are no checks to see if the working directory is valid
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` If the path is invalid
+    pub fn hapi_process_set_cwd(path: *const u8) -> i32;
     /// Spawn a wasm binary as a subprocess.
     /// ### Returns
     /// - The pid of the subprocess on success.

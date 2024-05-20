@@ -13,6 +13,24 @@ pub fn pid() -> Option<String> {
     Some(string)
 }
 
+/// Get the current working directory
+pub fn cwd() -> String {
+    let ptr = unsafe { crate::ffi::hapi_process_get_cwd() };
+    let cstring = unsafe { CStr::from_ptr(ptr as *const i8) };
+    let string = cstring.to_string_lossy().to_string();
+    let string = string.to_owned();
+
+    unsafe { crate::mem::free(ptr as *mut u8) };
+
+    string
+}
+
+/// Set the current working directory
+pub fn set_cwd(wd: &str) {
+    let cstring = CString::new(wd).unwrap();
+    unsafe { crate::ffi::hapi_process_set_cwd(cstring.as_ptr() as *const u8) };
+}
+
 /// Represents a process
 pub struct Process(String);
 

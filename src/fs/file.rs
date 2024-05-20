@@ -13,9 +13,9 @@ impl File {
     /// Open a file
     pub fn open(path: impl Into<PathBuf>) -> Result<Self, Error> {
         let path: PathBuf = path.into();
-        let path = path.to_str().unwrap();
+        let mut path = path.to_str().unwrap().to_string();
 
-        let path_cstr = CString::new(path).unwrap();
+        let path_cstr = CString::new(path.clone()).unwrap();
         let mut id_buf = vec![0; 37];
 
         let result = unsafe {
@@ -26,10 +26,20 @@ impl File {
             return Err(Error::NoSuchFile(path.to_owned()));
         }
 
+        // If the path does not contain a fs label, append the dir to the current working directory
+        let fs_label = match FsLabel::extract_from_path(&path) {
+            Ok(label) => label,
+            Err(_) => {
+                let cwd = crate::process::cwd();
+                path = format!("{}/{}", cwd, path);
+                FsLabel::extract_from_path(&path)?
+            }
+        };
+
         let id_str = CString::from_vec_with_nul(id_buf).unwrap();
         return Ok(Self {
             id: id_str,
-            fs_label: FsLabel::extract_from_path(path).unwrap(),
+            fs_label,
         });
     }
 
