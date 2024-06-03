@@ -10,6 +10,7 @@ pub mod mem;
 pub mod network;
 pub mod process;
 pub mod stdout;
+pub mod thread;
 pub mod time;
 pub mod util;
 
