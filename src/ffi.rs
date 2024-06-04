@@ -14,10 +14,16 @@ extern "C" {
     pub fn hapi_stdout_clear_line();
     /// Print a string to process's stdout
     pub fn hapi_stdout_write(string: *const u8);
-    /// Returns the process id of the current process
-    pub fn hapi_process_get_pid() -> *const u8;
-    /// Get the current working directory
-    pub fn hapi_process_get_cwd() -> *const u8;
+    /// Write the proccess id to the buffer
+    /// ### Safety
+    /// - The buffer size must be at least 37-bytes or unallocated memory will be written to.
+    pub fn hapi_process_get_pid(buffer: *mut u8);
+    /// Write the current working directory to the buffer
+    /// ### Safety
+    /// - The buffer size must be at least the size of `hapi_process_get_cwd_length` or unallocated memory will be written to.
+    pub fn hapi_process_get_cwd(buffer: *mut u8);
+    // Get the string length of current working directory
+    pub fn hapi_process_get_cwd_length() -> u32;
     /// Sets the current working directory for the process.
     /// ### Note
     /// There are no checks to see if the working directory is valid
@@ -26,17 +32,30 @@ extern "C" {
     /// - `-1` If the path is invalid
     pub fn hapi_process_set_cwd(path: *const u8) -> i32;
     /// Spawn a wasm binary as a subprocess.
+    /// Writes the pid of the process to the provided buffer, unless null.
+    /// ### Safety
+    /// - The provided buffer must be at least 37-bytes of length or unallocated memory will be written to
     /// ### Returns
-    /// - The pid of the subprocess on success.
-    /// - NULL if the subprocess failed to spawn.
-    pub fn hapi_process_spawn_subprocess(bin: *const u8, bin_len: u32) -> *const u8;
+    /// - `0` On success
+    /// - `-1` On failure
+    pub fn hapi_process_spawn_subprocess(bin: *const u8, bin_len: u32, pid_out: *mut u8);
     /// Returns true if the process is alive
     pub fn hapi_process_alive(id: *const u8) -> i32;
-    /// Return the stdout of a process
+    /// Write the stoud of a process to a buffer
+    /// ### Safety
+    /// - The out buffer must be equal to `hapi_process_stdout_length` or unallocated memory will be written to.
+    /// - The id must be at least 37-bytes in length and a valid string or unallocated memory will be read from.
     /// ### Returns
-    /// - The stdout of a process if successful
-    /// - NULL if the process does not exists, or if the memory allocation failed
-    pub fn hapi_process_stdout(id: *const u8) -> *const u8;
+    /// - `0` On success
+    /// - `-1` on failure
+    pub fn hapi_process_stdout(id: *const u8, out_buffer: *mut u8);
+    /// Returns the current length of the stdout buffer
+    /// ### Returns
+    /// - The length of the stdout buffer
+    /// - `-1` If the id cannot be read from memory
+    /// ### Safety
+    /// - The id must be at least 37-bytes in length and a valid string or unallocated memory will be read from.
+    pub fn hapi_process_stdout_length(id: *const u8) -> i32;
     /// Allocate a block of memory and return it's pointer.
     /// ### Returns
     /// - The pointer to the block

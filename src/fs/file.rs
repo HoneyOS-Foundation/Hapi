@@ -30,7 +30,8 @@ impl File {
         let fs_label = match FsLabel::extract_from_path(&path) {
             Ok(label) => label,
             Err(_) => {
-                let cwd = crate::process::cwd();
+                let cwd =
+                    crate::process::cwd().expect("Failed to aquire current working directory");
                 path = format!("{}/{}", cwd, path);
                 FsLabel::extract_from_path(&path)?
             }

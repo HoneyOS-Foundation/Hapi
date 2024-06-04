@@ -1,29 +1,28 @@
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 
 /// Get the process id
 pub fn pid() -> Option<String> {
-    let ptr = unsafe { crate::ffi::hapi_process_get_pid() };
-    // # Safety
-    // Since the string is garunteed to be null ternimated, there is no way of accessing unallocated memory
-    let cstring = unsafe { CStr::from_ptr(ptr as *const i8) };
-    let mut string = cstring.to_string_lossy().to_string();
-    let _ = string.split_off(36);
-    let string = string.to_owned();
+    const PID_LENGTH: usize = std::mem::size_of::<u8>() * 37;
+    let mut pid_buf = vec![0u8; PID_LENGTH];
 
-    unsafe { crate::mem::free(ptr as *mut u8) };
+    unsafe { crate::ffi::hapi_process_get_pid(&mut pid_buf[0] as *mut u8) };
+
+    let string = CString::from_vec_with_nul(pid_buf).ok()?;
+    let string = string.to_string_lossy().to_string();
     Some(string)
 }
 
 /// Get the current working directory
-pub fn cwd() -> String {
-    let ptr = unsafe { crate::ffi::hapi_process_get_cwd() };
-    let cstring = unsafe { CStr::from_ptr(ptr as *const i8) };
-    let string = cstring.to_string_lossy().to_string();
-    let string = string.to_owned();
+pub fn cwd() -> Option<String> {
+    let cwd_length = unsafe { crate::ffi::hapi_process_get_cwd_length() } as usize;
+    let mut cwd_buf = vec![0u8; cwd_length];
 
-    unsafe { crate::mem::free(ptr as *mut u8) };
+    unsafe { crate::ffi::hapi_process_get_cwd(&mut cwd_buf[0] as *mut u8) };
 
-    string
+    let string = CString::from_vec_with_nul(cwd_buf).ok()?;
+    let string = string.to_string_lossy().to_string();
+
+    Some(string)
 }
 
 /// Set the current working directory
@@ -39,21 +38,20 @@ impl Process {
     /// Spawn a wasm binary as a subprocess and return it's pid
     pub fn spawn_sub(bin: &[u8]) -> Option<Self> {
         let bin = bin.to_vec();
-        let pid_ptr =
-            unsafe { crate::ffi::hapi_process_spawn_subprocess(bin.as_ptr(), bin.len() as u32) };
 
-        if pid_ptr == std::ptr::null() {
-            return None;
-        }
+        const PID_LENGTH: usize = std::mem::size_of::<u8>() * 37;
+        let mut pid_buf = vec![0u8; PID_LENGTH];
 
-        // # Safety
-        // Since the string is garunteed to be null ternimated, there is no way of accessing unallocated memory
-        let cstring = unsafe { CStr::from_ptr(pid_ptr as *const i8) };
-        let mut string = cstring.to_string_lossy().to_string();
-        let _ = string.split_off(36);
-        let string = string.to_owned();
+        unsafe {
+            crate::ffi::hapi_process_spawn_subprocess(
+                bin.as_ptr(),
+                bin.len() as u32,
+                &mut pid_buf[0] as *mut u8,
+            )
+        };
 
-        unsafe { crate::mem::free(pid_ptr as *mut u8) };
+        let string = CString::from_vec_with_nul(pid_buf).ok()?;
+        let string = string.to_string_lossy().to_string();
 
         Some(Self(string))
     }
@@ -75,21 +73,19 @@ impl Process {
     pub fn stdout(&self) -> Option<String> {
         let id = &self.0;
         let id_cstr = CString::new(id.clone()).unwrap();
-        let stdout_ptr = unsafe { crate::ffi::hapi_process_stdout(id_cstr.as_ptr() as *const u8) };
 
-        log::info!("Stdout: {:#02x}", stdout_ptr as u32);
+        const PID_LENGTH: usize = std::mem::size_of::<u8>() * 37;
+        let mut pid_buf = vec![0u8; PID_LENGTH];
 
-        if stdout_ptr == std::ptr::null() {
-            return None;
-        }
+        unsafe {
+            crate::ffi::hapi_process_stdout(
+                id_cstr.as_ptr() as *const u8,
+                &mut pid_buf[0] as *mut u8,
+            )
+        };
 
-        // # Safety
-        // Since the string is garunteed to be null ternimated, there is no way of accessing unallocated memory
-        let cstring = unsafe { CStr::from_ptr(stdout_ptr as *const i8) };
-        let string = cstring.to_string_lossy().to_string();
-        let string = string.to_owned();
-
-        unsafe { crate::mem::free(stdout_ptr as *mut u8) };
+        let string = CString::from_vec_with_nul(pid_buf).ok()?;
+        let string = string.to_string_lossy().to_string();
 
         Some(string)
     }
