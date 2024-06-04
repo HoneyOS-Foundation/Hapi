@@ -8,11 +8,8 @@ pub enum DisplayError {
     NotRegistered,
 }
 
-/// The display for the process
-pub struct Display(String);
-
-/// The display server for honeyos
-pub struct DisplayServer;
+/// The os's display
+pub struct Display(PhantomData<()>);
 
 /// The key buffer stored in the display
 #[derive(Debug)]
@@ -25,7 +22,7 @@ pub struct KeyPress {
 
 impl Display {
     /// Push the process's stdout to the display's text buffer
-    pub fn push_stdout(&mut self) -> Result<(), DisplayError> {
+    pub fn push_stdout() -> Result<(), DisplayError> {
         let result = unsafe { crate::ffi::hapi_display_push_stdout() };
         if result == -1 {
             return Err(DisplayError::NotRegistered);
@@ -34,7 +31,7 @@ impl Display {
     }
 
     /// Set the text on the display's text buffer
-    pub fn set_text(&mut self, text: impl Into<String>) -> Result<(), DisplayError> {
+    pub fn set_text(text: impl Into<String>) -> Result<(), DisplayError> {
         let text: String = text.into();
         let text_cstr = CString::new(text.clone()).unwrap();
 
@@ -47,7 +44,7 @@ impl Display {
     }
 
     /// Get the key from the the key buffer and clear it
-    pub fn key_buffer(&mut self) -> Option<KeyPress> {
+    pub fn key_buffer() -> Option<KeyPress> {
         let key = unsafe { crate::ffi::hapi_display_get_key_buffer() };
         if key <= -1 {
             return None;
@@ -63,28 +60,6 @@ impl Display {
             ctrl,
             _phantom: PhantomData,
         })
-    }
-}
-
-impl DisplayServer {
-    /// Register a display
-    pub fn register() -> Display {
-        unsafe { crate::ffi::hapi_display_server_register() };
-        Display(crate::process::pid().unwrap())
-    }
-
-    /// Claim the display server and display as head display
-
-    pub fn claim(display: &Display) -> Result<(), DisplayError> {
-        let id = &display.0;
-        let id_cstr = CString::new(id.clone()).unwrap();
-
-        let result =
-            unsafe { crate::ffi::hapi_display_server_claim_main(id_cstr.as_ptr() as *const u8) };
-        if result == -1 {
-            return Err(DisplayError::NotRegistered);
-        }
-        Ok(())
     }
 }
 

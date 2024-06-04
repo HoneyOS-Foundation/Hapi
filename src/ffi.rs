@@ -50,40 +50,24 @@ extern "C" {
     // hapi_mem_free
     // Free a block of memory
     pub fn hapi_mem_free(ptr: *mut c_void);
-    /// Registers a display for the process
-    pub fn hapi_display_server_register();
-    /// Claim the display server, displaying the display with the provided id
-    /// ### Returns
-    /// - `0` on success
-    /// - `-1` if no display is registered
-    pub fn hapi_display_server_claim_main(id: *const u8) -> i32;
     /// Push stdout to the display's text-mode buffer.
     /// ### Returns
     /// - `0` on success
-    /// - `-1` if no display is registered
     pub fn hapi_display_push_stdout() -> i32;
     /// Set the text in the displays text-mode buffer.
     /// ### Returns
     /// - `0` on success
-    /// - `-1` if no display is registered
     pub fn hapi_display_set_text(text: *const u8) -> i32;
     /// Get the key in the displays key buffer. Clears it afterwards.
     /// ### Returns
     /// - `-1` or if the key buffer is empty.
-    /// - `-2` if no display is registered.
     pub fn hapi_display_get_key_buffer() -> i32;
     /// Whether or not the shift key is in the key buffer
-    /// ### Returns
-    /// - `-1` if no display is registered.
     pub fn hapi_display_get_key_shift() -> i32;
     /// Whether or not the control key is in the key buffer
-    /// ### Returns
-    /// - `-1` if no display is registered.
     pub fn hapi_display_get_key_ctrl() -> i32;
     /// Clears the key buffer of the display
-    /// ### Returns
-    /// - `-1` if no display is registered.
-    pub fn hapi_display_clear_key() -> i32;
+    pub fn hapi_display_clear_key();
     /// Get the time in seconds since the start of the process
     pub fn hapi_time_since_startup() -> f64;
     /// Returns a pointer to the user agent.
