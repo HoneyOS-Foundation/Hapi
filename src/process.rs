@@ -9,6 +9,7 @@ pub fn pid() -> Option<String> {
     let mut string = cstring.to_string_lossy().to_string();
     let _ = string.split_off(36);
     let string = string.to_owned();
+
     unsafe { crate::mem::free(ptr as *mut u8) };
     Some(string)
 }
@@ -75,6 +76,8 @@ impl Process {
         let id = &self.0;
         let id_cstr = CString::new(id.clone()).unwrap();
         let stdout_ptr = unsafe { crate::ffi::hapi_process_stdout(id_cstr.as_ptr() as *const u8) };
+
+        log::info!("Stdout: {:#02x}", stdout_ptr as u32);
 
         if stdout_ptr == std::ptr::null() {
             return None;
