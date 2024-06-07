@@ -74,6 +74,12 @@ pub fn main(_: TokenStream, item: TokenStream) -> TokenStream {
 
             #entrypoint_call;
         }
+
+        #[no_mangle]
+        pub extern "C" fn _thread_entrypoint(f_ptr: u32) {
+            let func = unsafe { Box::from_raw(f_ptr as *mut Box<dyn FnOnce()>) };
+            (*func)();
+        }
     }
     .into()
 }

@@ -69,23 +69,58 @@ extern "C" {
     // hapi_mem_free
     // Free a block of memory
     pub fn hapi_mem_free(ptr: *mut c_void);
-    /// Push stdout to the display's text-mode buffer.
+    /// Attempt to take control of the display
     /// ### Returns
-    /// - `0` on success
+    /// - `0` On success
+    /// - `-1` If the display is occupied
+    pub fn hapi_display_assume_control() -> i32;
+    /// Override the control over the display
+    pub fn hapi_display_override_control();
+    /// Release the control over the display.
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` If the display is occupied
+    pub fn hapi_display_release_control() -> i32;
+    /// Take away the control over the display from the currently controling process,
+    /// regardless of whether the process has control.
+    pub fn hapi_display_displace_control(); // "We workers must take control of the means of display" - GetAGripGal
+    /// Push stdout to the display's text-mode buffer.
+    /// Do nothing if the process does not have control of the display.
+    /// ### Returns
+    /// - `0` On success
+    /// - `-1` If the process doesn't have control over the display
     pub fn hapi_display_push_stdout() -> i32;
     /// Set the text in the displays text-mode buffer.
+    /// Do nothing if the process does not have control of the display.
     /// ### Returns
-    /// - `0` on success
+    /// - `0` On success
+    /// - `-1` If the process doesn't have control over the display
+    /// - `-2` If the string is invalid
     pub fn hapi_display_set_text(text: *const u8) -> i32;
     /// Get the key in the displays key buffer. Clears it afterwards.
+    /// Do nothing if the process does not have control of the display.
     /// ### Returns
-    /// - `-1` or if the key buffer is empty.
+    /// - The key stored in the key buffer
+    /// - `-1` If the process doesn't have control over the display
+    /// - `-2` or if the key buffer is empty.
     pub fn hapi_display_get_key_buffer() -> i32;
     /// Whether or not the shift key is in the key buffer
+    /// Do nothing if the process does not have control of the display.
+    /// ### Returns
+    /// - Whether the shift key is pressed in the key buffer
+    /// - `-1` If the process doesn't have control over the display
     pub fn hapi_display_get_key_shift() -> i32;
     /// Whether or not the control key is in the key buffer
+    /// Do nothing if the process does not have control of the display.
+    /// ### Returns
+    /// - Whether the ctrl key is pressed in the key buffer
+    /// - `-1` If the process doesn't have control over the display
     pub fn hapi_display_get_key_ctrl() -> i32;
     /// Clears the key buffer of the display
+    /// Do nothing if the process does not have control of the display.
+    /// ### Returns
+    /// - `0` On Success
+    /// - `-1` If the process doesn't have control over the display
     pub fn hapi_display_clear_key();
     /// Get the time in seconds since the start of the process
     pub fn hapi_time_since_startup() -> f64;

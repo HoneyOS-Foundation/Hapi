@@ -5,7 +5,7 @@ use crate::util::keys::KeyCode;
 /// The errors for the display
 #[derive(Debug)]
 pub enum DisplayError {
-    NotRegistered,
+    Occupied,
 }
 
 /// The os's display
@@ -21,26 +21,50 @@ pub struct KeyPress {
 }
 
 impl Display {
-    /// Push the process's stdout to the display's text buffer
-    pub fn push_stdout() -> Result<(), DisplayError> {
-        let result = unsafe { crate::ffi::hapi_display_push_stdout() };
-        if result == -1 {
-            return Err(DisplayError::NotRegistered);
+    /// Assume control over the display.
+    /// ### Errors
+    /// - `DisplayError::Occupied` When the display is in control of another process
+    pub fn assume_control() -> Result<(), DisplayError> {
+        let result = unsafe { crate::ffi::hapi_display_assume_control() };
+        if result < 0 {
+            return Err(DisplayError::Occupied);
         }
         Ok(())
     }
 
+    /// Override the control of the current process
+    pub fn override_control() {
+        unsafe {
+            crate::ffi::hapi_display_override_control();
+        }
+    }
+
+    /// Release control of the display
+    pub fn release_control() -> Result<(), DisplayError> {
+        let result = unsafe { crate::ffi::hapi_display_release_control() };
+        if result < 0 {
+            return Err(DisplayError::Occupied);
+        }
+        Ok(())
+    }
+
+    /// Take away the control over the display from the currently controling process,
+    /// regardless of whether the process has control.
+    pub fn displace_control() {
+        unsafe { crate::ffi::hapi_display_displace_control() };
+    }
+
+    /// Push the process's stdout to the display's text buffer
+    pub fn push_stdout() {
+        unsafe { crate::ffi::hapi_display_push_stdout() };
+    }
+
     /// Set the text on the display's text buffer
-    pub fn set_text(text: impl Into<String>) -> Result<(), DisplayError> {
+    pub fn set_text(text: impl Into<String>) {
         let text: String = text.into();
         let text_cstr = CString::new(text.clone()).unwrap();
 
-        let result = unsafe { crate::ffi::hapi_display_set_text(text_cstr.as_ptr() as *const u8) };
-        if result == -1 {
-            return Err(DisplayError::NotRegistered);
-        }
-
-        Ok(())
+        unsafe { crate::ffi::hapi_display_set_text(text_cstr.as_ptr() as *const u8) };
     }
 
     /// Get the key from the the key buffer and clear it
@@ -77,8 +101,8 @@ impl std::error::Error for DisplayError {}
 impl std::fmt::Display for DisplayError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DisplayError::NotRegistered => {
-                writeln!(f, "The current process does not have a display registered")
+            DisplayError::Occupied => {
+                writeln!(f, "The display is currently occupied by another process")
             }
         }
     }
