@@ -69,7 +69,7 @@ pub fn main(_: TokenStream, item: TokenStream) -> TokenStream {
                 #[cfg(feature = "logger")]
                 log::error("{}", message);
 
-                hapi::println!("{}", message);
+                hapi::println!("\x1b[91m{}\x1b[97m", message);
             }));
 
             #entrypoint_call;

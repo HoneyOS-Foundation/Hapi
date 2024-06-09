@@ -10,8 +10,11 @@ extern "C" {
     pub fn hapi_js_console_log_error(string: *const u8);
     /// Clear the process's stdout
     pub fn hapi_stdout_clear();
-    /// Clear last line in process's stdout
+    /// Clear last line in the process's stdout
     pub fn hapi_stdout_clear_line();
+    /// Clear N number of lines in the processes's stdout.
+    /// Will only clear up to the amount of lines.
+    pub fn hapi_stdout_clear_lines(num: u32);
     /// Print a string to process's stdout
     pub fn hapi_stdout_write(string: *const u8);
     /// Write the proccess id to the buffer
@@ -122,6 +125,8 @@ extern "C" {
     /// - `0` On Success
     /// - `-1` If the process doesn't have control over the display
     pub fn hapi_display_clear_key();
+    /// Get the time in seconds since the start of the unix epoch
+    pub fn hapi_time_since_unix_epoch() -> f64;
     /// Get the time in seconds since the start of the process
     pub fn hapi_time_since_startup() -> f64;
     /// Returns a pointer to the user agent.

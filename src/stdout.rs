@@ -28,6 +28,15 @@ pub fn clear_line() {
     unsafe { crate::ffi::hapi_stdout_clear_line() }
 }
 
+/// Clear N number of lines in honeyos's stdout.
+/// Will only clear up to the amount of lines.
+pub fn clear_lines(num: u32) {
+    // # Safety
+    // stdout_clear is garunteed to be safe by honeyos's implementation.
+    // If the honeyos kernel is non-standard, there are no safety garuntees and this might be unsound
+    unsafe { crate::ffi::hapi_stdout_clear_lines(num) }
+}
+
 /// Write to honeyos's stdout
 pub fn write(string: impl Into<String>) {
     let string: String = string.into();

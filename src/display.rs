@@ -17,7 +17,7 @@ pub struct KeyPress {
     pub key: i32,
     pub shift: bool,
     pub ctrl: bool,
-    _phantom: PhantomData<()>,
+    _phantom: PhantomData<()>, // To prevent from creation outside the api
 }
 
 impl Display {
@@ -54,12 +54,14 @@ impl Display {
         unsafe { crate::ffi::hapi_display_displace_control() };
     }
 
-    /// Push the process's stdout to the display's text buffer
+    /// Push the process's stdout to the display's text buffer.
+    /// Will do nothing if this process does not have control of the display.
     pub fn push_stdout() {
         unsafe { crate::ffi::hapi_display_push_stdout() };
     }
 
     /// Set the text on the display's text buffer
+    /// Will do nothing if this process does not have control of the display.
     pub fn set_text(text: impl Into<String>) {
         let text: String = text.into();
         let text_cstr = CString::new(text.clone()).unwrap();
@@ -68,6 +70,7 @@ impl Display {
     }
 
     /// Get the key from the the key buffer and clear it
+    /// Will return nothing if the key buffer is empty, or if this process does not have control of the display.
     pub fn key_buffer() -> Option<KeyPress> {
         let key = unsafe { crate::ffi::hapi_display_get_key_buffer() };
         if key <= -1 {
