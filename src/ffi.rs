@@ -280,6 +280,6 @@ extern "C" {
     /// The destination buffer must be the size of a UUID (37 bytes),
     /// otherwise the remaining bytes will be written to unallocated memory and can cause UB.
     pub fn hapi_fs_directory_get(path: *const u8, id_buf: *mut u8) -> i32;
-    // Spawn a function pointer on a new thread
+    /// Spawn a function pointer on a new thread
     pub fn hapi_thread_spawn(f_ptr: *const c_void);
 }

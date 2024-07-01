@@ -1,11 +1,9 @@
-#![feature(async_closure)]
-
 pub mod browser;
 pub mod display;
 pub mod ffi;
 pub mod fs;
 pub mod futures;
-pub mod js_console;
+pub mod js;
 pub mod mem;
 pub mod network;
 pub mod process;
