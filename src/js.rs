@@ -64,7 +64,7 @@ pub mod log {
 /// Evaluate some javascript code
 /// Returns the result as a string
 /// Returns None if the code could not be evaluated
-pub fn eval(source: &str) -> Option<String> {
+pub fn eval(source: &str) -> Option<serde_json::Value> {
     let cstring = CString::new(source).unwrap();
     let ptr = unsafe { crate::ffi::hapi_js_console_eval(cstring.as_ptr() as *const u8) };
 
@@ -82,5 +82,5 @@ pub fn eval(source: &str) -> Option<String> {
     // Since we know the string was allocated by the hapi_js_console_eval function, we know it is safe to free
     unsafe { crate::mem::free(ptr as *mut u8) };
 
-    Some(string)
+    serde_json::from_str(&string).ok()
 }

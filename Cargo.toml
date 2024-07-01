@@ -11,3 +11,4 @@ log = ["dep:log"]
 futures = "0.3.30"
 hapi-proc = { path = "hapi-proc" }
 log = { version = "0.4", optional = true }
+serde_json = "1.0.119"
