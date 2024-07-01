@@ -1,7 +1,7 @@
 use std::ffi::CStr;
 
 /// Get the user agent of the browser
-pub fn user_agent<'a>() -> Option<String> {
+pub fn user_agent() -> Option<String> {
     // # Safety
     // Since we check for failed allocations, there is no way to access unallocated memory.
     let ptr = unsafe { crate::ffi::hapi_browser_user_agent() };

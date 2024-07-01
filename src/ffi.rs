@@ -8,6 +8,11 @@ extern "C" {
     pub fn hapi_js_console_log_warn(string: *const u8);
     /// Logs a string to the js console as an error
     pub fn hapi_js_console_log_error(string: *const u8);
+    /// Evaluate a string as js code. Returns the result as a string.
+    /// ### Safety
+    /// - The string must be a valid null-terminated string or unallocated memory will be read from.
+    /// - The returned string must be freed with `hapi_mem_free` or memory will be leaked.
+    pub fn hapi_js_console_eval(source: *const u8) -> *const u8;
     /// Clear the process's stdout
     pub fn hapi_stdout_clear();
     /// Clear last line in the process's stdout

@@ -5,6 +5,7 @@ edition = "2021"
 
 [features]
 logger = ["log"]
+log = ["dep:log"]
 
 [dependencies]
 futures = "0.3.30"
